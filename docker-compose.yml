@@ -1,6 +1,26 @@
 version: "3"
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "bookapp"
+      POSTGRES_PASSWORD: "bookapp123"
+      POSTGRES_DB: "bookapp"
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - "redis:/data"
+    restart: always
+
   minio:
     image: minio/minio:latest
     ports:
@@ -13,5 +33,8 @@ services:
       - "minio:/data/minio"
     command: minio server /data/minio --console-address ":9090"
     restart: always
+
 volumes:
+  postgres:
+  redis:
   minio:

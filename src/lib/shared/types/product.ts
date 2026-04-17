@@ -1,5 +1,2 @@
-import { api } from "@/server/api";
-
-export type Product = NonNullable<
-  Awaited<ReturnType<typeof api.products.get>>["data"]
->[number];
+// Legacy file — products removed in BookApp refactor
+export type Product = { id: string; name: string; price: string };

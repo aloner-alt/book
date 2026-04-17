@@ -37,6 +37,14 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* BookApp brand colors */
+  --color-business: #4a235a;
+  --color-client: #1a5fa8;
+  --color-employee: #1a6b4a;
+  --color-freelancer: #0e7070;
+  --color-header: #1a1a2e;
+  --color-accent-orange: #f0a000;
 }
 
 @theme inline {
@@ -78,14 +86,14 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  /* BookApp brand colors in tailwind */
+  --color-business: var(--color-business);
+  --color-client: var(--color-client);
+  --color-employee: var(--color-employee);
+  --color-freelancer: var(--color-freelancer);
+  --color-header: var(--color-header);
+  --color-accent-orange: var(--color-accent-orange);
 }
-
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ad1c1c;
-  }
-} */
 
 .dark {
   --background: oklch(0.145 0 0);
@@ -106,19 +114,6 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @layer base {
@@ -127,5 +122,49 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* BookApp utility classes */
+@layer utilities {
+  .role-business {
+    background-color: #4a235a;
+    color: white;
+  }
+  .role-client {
+    background-color: #1a5fa8;
+    color: white;
+  }
+  .role-employee {
+    background-color: #1a6b4a;
+    color: white;
+  }
+  .role-freelancer {
+    background-color: #0e7070;
+    color: white;
+  }
+  .border-business {
+    border-color: #4a235a;
+  }
+  .border-client {
+    border-color: #1a5fa8;
+  }
+  .border-employee {
+    border-color: #1a6b4a;
+  }
+  .border-freelancer {
+    border-color: #0e7070;
+  }
+  .text-business {
+    color: #4a235a;
+  }
+  .text-client {
+    color: #1a5fa8;
+  }
+  .text-employee {
+    color: #1a6b4a;
+  }
+  .text-freelancer {
+    color: #0e7070;
   }
 }

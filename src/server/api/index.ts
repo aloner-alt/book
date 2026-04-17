@@ -1,21 +1,28 @@
 import Elysia from "elysia";
-import { productsRouter } from "./products";
-import { categoriesRouter } from "./category";
 import { treaty } from "@elysiajs/eden";
 import { userRouter } from "./user";
 import { fileRouter } from "./file";
+import { authRouter } from "./auth";
+import { employeesRouter } from "./employees";
+import { appointmentsRouter } from "./appointments";
+import { servicesRouter } from "./services";
+import { mastersRouter } from "./masters";
+import { profileRouter } from "./profile";
+import { analyticsRouter } from "./analytics";
+import { businessClientsRouter } from "./businessClients";
 
+export const app = new Elysia({ prefix: "/api" })
+  .use(userRouter)
+  .use(fileRouter)
+  .use(authRouter)
+  .use(employeesRouter)
+  .use(appointmentsRouter)
+  .use(servicesRouter)
+  .use(mastersRouter)
+  .use(profileRouter)
+  .use(analyticsRouter)
+  .use(businessClientsRouter);
 
-export const app = new Elysia({
-    prefix: "/api"
-})
-.use(productsRouter)
-.use(categoriesRouter)
-.use(userRouter)
-.use(fileRouter)
+export const api = treaty(app).api;
 
-
-export const api = treaty(app).api
-
-
-export type App = typeof app
+export type App = typeof app;

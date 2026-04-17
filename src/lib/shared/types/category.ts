@@ -1,4 +1,2 @@
-import { api } from "@/server/api";
-import { InferTreatyReturnType } from "./utils";
-
-export type Category = InferTreatyReturnType<typeof api.categories.get>[number];
+// Legacy file — categories removed in BookApp refactor
+export type Category = { id: string; name: string };

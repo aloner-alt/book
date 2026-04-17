@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Wireflow v3</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f0f0f0;font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#222;}
+#canvas{position:relative;width:2200px;height:3600px;background:#f0f0f0;}
+svg#arrows{position:absolute;top:0;left:0;width:2200px;height:3600px;pointer-events:none;z-index:0;}
+
+/* ── SCREEN BOX ── */
+.screen{position:absolute;background:#fff;border:1.8px solid #555;border-radius:8px;padding:0;z-index:1;box-shadow:0 3px 10px rgba(0,0,0,0.12);overflow:hidden;}
+
+/* ── HEADER ── */
+.pg-header{height:34px;background:#1a1a2e;display:flex;align-items:center;padding:0 10px;gap:8px;border-radius:6px 6px 0 0;}
+.pg-header .logo{font-size:10px;font-weight:bold;color:#fff;white-space:nowrap;}
+.pg-header .hdr-nav{display:flex;gap:5px;margin-left:auto;}
+.pg-header .hdr-btn{height:22px;border:1px solid rgba(255,255,255,0.4);border-radius:3px;padding:0 7px;font-size:8px;color:#fff;background:transparent;line-height:20px;white-space:nowrap;}
+.pg-header .hdr-btn.active{background:rgba(255,255,255,0.2);}
+.pg-body{padding:12px;}
+
+/* ── ZONE LABEL ── */
+.zlabel{position:absolute;z-index:2;font-size:16px;font-weight:bold;color:#111;}
+.zlabel.green{color:#1a6b4a;}
+.zlabel.purple{color:#4a235a;}
+.zlabel.navy{color:#1a5fa8;}
+.zlabel.teal{color:#0e7070;}
+
+/* ── FIELDS ── */
+.fl{font-size:9px;color:#555;margin-top:5px;margin-bottom:2px;}
+.fi{width:100%;height:20px;border:1px solid #bbb;border-radius:3px;background:#fafafa;}
+.fs{width:100%;height:22px;border:1px solid #bbb;border-radius:3px;background:#fafafa;font-size:9px;}
+.fta{width:100%;height:32px;border:1px solid #bbb;border-radius:3px;background:#fafafa;}
+.fup{width:100%;height:30px;border:1px dashed #bbb;border-radius:3px;background:#f5f5f5;font-size:8px;color:#aaa;text-align:center;line-height:28px;}
+.req{color:#c0392b;font-size:9px;}
+
+/* ── SECTION HEADER ── */
+.shdr{font-size:9px;font-weight:bold;color:#fff;border-radius:3px;padding:2px 7px;margin:7px 0 3px;}
+
+/* ── BUTTONS ── */
+.btn{width:100%;height:26px;border:1.5px solid #333;border-radius:4px;font-size:10px;font-weight:bold;text-align:center;line-height:24px;background:#fff;margin-top:8px;}
+.btn-primary{background:#1a1a2e;color:#fff;border-color:#1a1a2e;}
+.btn-outline{background:#fff;color:#333;border-color:#555;}
+.btn-red{display:inline-block;border:1px solid #c0392b;color:#c0392b;font-size:8px;height:18px;line-height:16px;padding:0 5px;border-radius:3px;}
+.btn-orange{display:inline-block;border:1px solid #d68910;color:#d68910;font-size:8px;height:18px;line-height:16px;padding:0 5px;border-radius:3px;}
+
+/* ── LAYOUT HELPERS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.row{display:flex;gap:6px;}
+.chk{display:flex;align-items:flex-start;gap:5px;margin-top:4px;}
+.chk .b{width:12px;height:12px;border:1px solid #999;border-radius:2px;flex-shrink:0;margin-top:1px;}
+.chk span{font-size:8px;color:#666;line-height:1.4;}
+.div{border:none;border-top:1px solid #eee;margin:7px 0;}
+.badge{display:inline-block;font-size:7px;border:1px solid #aaa;border-radius:8px;padding:1px 7px;color:#666;background:#f5f5f5;margin:4px auto;}
+.note{font-size:8px;color:#aaa;margin-top:2px;}
+.tag-link{font-size:8px;color:#3a7bd5;text-decoration:underline;cursor:pointer;}
+
+/* ── MODAL OVERLAY STYLE ── */
+.modal-pop{position:absolute;z-index:3;background:#fff;border:1.8px solid #333;border-radius:8px;padding:12px;box-shadow:0 6px 20px rgba(0,0,0,0.2);}
+
+/* ── CABINET (CRM style) ── */
+.cab-wrap{display:flex;height:100%;}
+.cab-sidebar{width:140px;background:#1a1a2e;padding:8px 0;flex-shrink:0;}
+.cab-sidebar .mini-cal{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.cab-sidebar .mini-cal-title{font-size:8px;color:#fff;text-align:center;margin-bottom:3px;}
+.cab-sidebar .mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;font-size:6px;color:rgba(255,255,255,0.6);text-align:center;}
+.cab-sidebar .mini-cal-grid .today{background:#f0a000;color:#fff;border-radius:50%;width:10px;height:10px;display:flex;align-items:center;justify-content:center;margin:auto;}
+.cab-sidebar .menu-item{display:flex;align-items:center;gap:6px;padding:7px 10px;font-size:9px;color:rgba(255,255,255,0.75);cursor:pointer;border-left:3px solid transparent;}
+.cab-sidebar .menu-item.active{background:rgba(255,255,255,0.1);border-left-color:#f0a000;color:#fff;}
+.cab-sidebar .menu-item .icon{font-size:11px;}
+.cab-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.cab-top-bar{height:36px;border-bottom:1px solid #eee;display:flex;align-items:center;padding:0 10px;gap:6px;background:#fff;flex-shrink:0;}
+.cab-top-bar .today-btn{height:24px;border:1px solid #ddd;border-radius:4px;padding:0 8px;font-size:8px;background:#fff;}
+.cab-top-bar .nav-btn{width:22px;height:22px;border:1px solid #ddd;border-radius:3px;font-size:9px;text-align:center;line-height:20px;background:#fff;}
+.cab-top-bar .date-title{font-size:12px;font-weight:bold;flex:1;text-align:center;}
+.cab-top-bar .top-action{height:24px;border:1px solid #ddd;border-radius:4px;padding:0 8px;font-size:8px;background:#fff;}
+.cab-top-bar .top-amount{height:24px;border:1px solid #ddd;border-radius:4px;padding:0 8px;font-size:8px;background:#fff;font-weight:bold;}
+.cab-grid{flex:1;display:flex;overflow:hidden;}
+.cab-time-col{width:38px;flex-shrink:0;border-right:1px solid #eee;}
+.cab-time-slot{height:40px;border-bottom:1px solid #f5f5f5;font-size:7px;color:#aaa;text-align:right;padding-right:4px;padding-top:2px;}
+.cab-staff-cols{flex:1;display:flex;overflow:hidden;}
+.cab-staff-col{flex:1;border-right:1px solid #eee;min-width:0;}
+.cab-staff-head{height:50px;border-bottom:1px solid #eee;padding:4px 6px;text-align:center;}
+.cab-staff-photo{width:28px;height:28px;border-radius:50%;background:#ddd;margin:0 auto 2px;}
+.cab-staff-name{font-size:8px;font-weight:bold;}
+.cab-staff-role{font-size:7px;color:#aaa;}
+.cab-slot{height:40px;border-bottom:1px solid #f8f8f8;position:relative;}
+.appt{position:absolute;left:2px;right:2px;border-radius:3px;padding:2px 3px;font-size:7px;overflow:hidden;}
+.appt-teal{background:#b2ebf2;border-left:2px solid #00acc1;}
+.appt-purple{background:#e1bee7;border-left:2px solid #8e24aa;}
+.appt-green{background:#c8e6c9;border-left:2px solid #43a047;}
+.appt-orange{background:#ffe0b2;border-left:2px solid #fb8c00;}
+.appt-pink{background:#fce4ec;border-left:2px solid #e91e63;}
+
+/* ── EMPLOYEE CARD ── */
+.emp-card{border:1px solid #e0e0e0;border-radius:5px;padding:7px;background:#fafafa;font-size:8px;}
+.emp-photo{width:38px;height:38px;border-radius:4px;background:#ddd;margin:0 auto 3px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.emp-name{font-weight:bold;text-align:center;font-size:8px;margin-bottom:2px;}
+.emp-role{color:#888;text-align:center;font-size:7px;margin-bottom:3px;}
+.emp-desc{color:#666;font-size:7px;line-height:1.3;margin-bottom:4px;border-top:1px solid #eee;padding-top:3px;}
+.emp-btn-detail{width:100%;height:18px;border:1px solid #3a7bd5;border-radius:3px;font-size:7px;text-align:center;line-height:16px;color:#3a7bd5;background:#fff;}
+
+/* record row */
+.rec-row{display:flex;align-items:center;justify-content:space-between;border:1px solid #eee;border-radius:3px;padding:4px 6px;margin-top:4px;font-size:8px;background:#fafafa;}
+.rec-info{flex:1;}
+</style>
+</head>
+<body>
+<div id="canvas">
+
+<!-- ══════════ ARROWS ══════════ -->
+<svg id="arrows">
+<defs>
+  <marker id="ab"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#3a7bd5"/></marker>
+  <marker id="ak"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#444"/></marker>
+  <marker id="ag"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#1a6b4a"/></marker>
+  <marker id="an"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#1a5fa8"/></marker>
+  <marker id="ap"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#4a235a"/></marker>
+  <marker id="ao"  markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="#f0a000"/></marker>
+</defs>
+
+<!-- Кнопка Войти → Модал выбора -->
+<path d="M 760,165 L 900,165" stroke="#444" stroke-width="2" fill="none" marker-end="url(#ak)"/>
+
+<!-- Модал: Бизнесмен → Рег. Бизнесмена -->
+<path d="M 960,210 C 960,300 300,300 300,480"
+      stroke="#4a235a" stroke-width="1.8" fill="none" stroke-dasharray="6,3" marker-end="url(#ap)"/>
+<!-- Модал: Клиент → Рег. Клиента -->
+<path d="M 1000,220 C 1000,310 800,310 800,480"
+      stroke="#1a5fa8" stroke-width="1.8" fill="none" stroke-dasharray="6,3" marker-end="url(#an)"/>
+<!-- Модал: Сотрудник → Форма входа -->
+<path d="M 1140,195 L 1190,195"
+      stroke="#1a6b4a" stroke-width="1.8" fill="none" stroke-dasharray="6,3" marker-end="url(#ag)"/>
+
+<!-- Есть аккаунт? → Форма входа (от рег. бизнесмена) -->
+<path d="M 540,680 C 850,680 850,180 1190,180"
+      stroke="#888" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#ak)"/>
+<!-- Есть аккаунт? → Форма входа (от рег. клиента) -->
+<path d="M 980,665 C 1100,665 1100,180 1190,180"
+      stroke="#888" stroke-width="1.5" fill="none" stroke-dasharray="5,3" marker-end="url(#ak)"/>
+
+<!-- Рег. Бизнесмена → Кабинет бизнесмена -->
+<path d="M 300,875 L 300,990" stroke="#4a235a" stroke-width="2" fill="none" marker-end="url(#ap)"/>
+<!-- Рег. Клиента → Кабинет клиента -->
+<path d="M 790,850 C 790,1600 760,1600 760,2235"
+      stroke="#1a5fa8" stroke-width="2" fill="none" marker-end="url(#an)"/>
+
+<!-- Кабинет бизнесмена → Создание акаунта сотрудника -->
+<path d="M 300,1660 L 300,1760" stroke="#444" stroke-width="1.8" fill="none" marker-end="url(#ak)"/>
+<!-- Кабинет бизнесмена → Список сотрудников -->
+<path d="M 740,1300 L 870,1300" stroke="#444" stroke-width="1.8" fill="none" marker-end="url(#ak)"/>
+<!-- Кабинет бизнесмена → Кабинет клиентов (внутри) уже в sidebar -->
+
+<!-- Создание акаунта → Регистрация сотрудника (форма) -->
+<path d="M 490,1840 L 650,1840" stroke="#1a6b4a" stroke-width="1.8" fill="none" marker-end="url(#ag)"/>
+
+<!-- Список сотрудников: Подробнее → Карточка -->
+<path d="M 1140,1300 L 1280,1300" stroke="#3a7bd5" stroke-width="1.6" fill="none" stroke-dasharray="5,3" marker-end="url(#ab)"/>
+
+<!-- Форма входа (роль=сотрудник) → Кабинет сотрудника -->
+<path d="M 1310,280 C 1310,1030 670,1030 670,1780"
+      stroke="#1a6b4a" stroke-width="1.8" fill="none" marker-end="url(#ag)"/>
+
+<!-- Самозанятый рег → кабинет самозанятого -->
+<line x1="270" y1="2565" x2="270" y2="2603"
+      stroke="#0e7070" stroke-width="1.8" marker-end="url(#ak)"/>
+
+</svg>
+
+<!-- ══════════════════════════════════════
+     ЛЕГЕНДА
+══════════════════════════════════════ -->
+<div style="position:absolute;right:30px;top:30px;background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:10px 14px;font-size:9px;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+  <div style="font-weight:bold;font-size:11px;margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:4px;">Обозначения</div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="#444" stroke-width="2" stroke-dasharray="4,3"/><polygon points="24,0 28,3 24,6" fill="#444"/></svg><span>Переход на регистрацию</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><svg width="28" height="6"><line x1="0" y1="3" x2="28" y2="3" stroke="#444" stroke-width="2"/><polygon points="24,0 28,3 24,6" fill="#444"/></svg><span>Переход / навигация</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;"><div style="width:11px;height:11px;border-radius:2px;background:#4a235a;"></div><span style="color:#4a235a;font-weight:bold;">Бизнесмен</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;"><div style="width:11px;height:11px;border-radius:2px;background:#1a6b4a;"></div><span style="color:#1a6b4a;font-weight:bold;">Сотрудник</span></div>
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;"><div style="width:11px;height:11px;border-radius:2px;background:#1a5fa8;"></div><span style="color:#1a5fa8;font-weight:bold;">Клиент</span></div>
+  <div style="display:flex;align-items:center;gap:6px;"><div style="width:11px;height:11px;border-radius:2px;background:#0e7070;"></div><span style="color:#0e7070;font-weight:bold;">Самозанятый</span></div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  A. ГЛАВНАЯ СТРАНИЦА
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:340px;top:50px;">Главная страница</div>
+<div class="screen" style="left:340px;top:80px;width:420px;">
+  <div class="pg-header">
+    <span class="logo">✂ BookApp</span>
+    <div class="hdr-nav">
+      <div class="hdr-btn">О сервисе</div>
+      <div class="hdr-btn">Мастерам</div>
+      <div class="hdr-btn">Бизнесу</div>
+      <div class="hdr-btn active">🔐 Войти</div>
+    </div>
+  </div>
+  <div class="pg-body">
+    <div style="text-align:center;padding:20px 10px 10px;">
+      <div style="font-size:16px;font-weight:bold;margin-bottom:6px;">Автоматизация записи<br>для бизнеса и мастеров</div>
+      <div style="font-size:10px;color:#888;margin-bottom:14px;">Управляйте записями, сотрудниками и клиентами в одном месте</div>
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <div style="height:30px;border:2px solid #4a235a;border-radius:5px;padding:0 16px;font-size:10px;line-height:28px;font-weight:bold;color:#4a235a;">Для бизнеса</div>
+        <div style="height:30px;border:2px solid #0e7070;border-radius:5px;padding:0 16px;font-size:10px;line-height:28px;font-weight:bold;color:#0e7070;">Мастерам</div>
+        <div style="height:30px;background:#1a1a2e;border-radius:5px;padding:0 16px;font-size:10px;line-height:28px;font-weight:bold;color:#fff;">🔐 Войти</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <div style="flex:1;border:1px solid #eee;border-radius:5px;padding:8px;text-align:center;font-size:8px;color:#666;"><div style="font-size:16px;margin-bottom:3px;">📅</div>Онлайн-запись</div>
+      <div style="flex:1;border:1px solid #eee;border-radius:5px;padding:8px;text-align:center;font-size:8px;color:#666;"><div style="font-size:16px;margin-bottom:3px;">📊</div>Аналитика</div>
+      <div style="flex:1;border:1px solid #eee;border-radius:5px;padding:8px;text-align:center;font-size:8px;color:#666;"><div style="font-size:16px;margin-bottom:3px;">👥</div>CRM клиентов</div>
+    </div>
+  </div>
+</div>
+
+<!-- Подпись стрелки -->
+<div style="position:absolute;left:764px;top:150px;font-size:9px;color:#888;font-style:italic;">Нажать «Войти»</div>
+
+
+<!-- ══════════════════════════════════════
+  B. МОДАЛ: ВЫБОР ТИПА ВХОДА
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:900px;top:50px;font-size:14px;">Модал — Как войти?</div>
+<div class="modal-pop" style="left:900px;top:80px;width:240px;">
+  <div style="font-size:12px;font-weight:bold;text-align:center;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #eee;">Выберите тип входа</div>
+  <div style="display:flex;flex-direction:column;gap:7px;">
+    <div style="border:1.5px solid #4a235a;border-radius:5px;padding:8px 10px;cursor:pointer;">
+      <div style="font-weight:bold;font-size:10px;color:#4a235a;">🏢 Я — Бизнесмен / Владелец</div>
+      <div style="font-size:8px;color:#888;margin-top:2px;">Управление бизнесом, сотрудниками</div>
+    </div>
+    <div style="border:1.5px solid #1a5fa8;border-radius:5px;padding:8px 10px;cursor:pointer;">
+      <div style="font-weight:bold;font-size:10px;color:#1a5fa8;">👤 Я — Клиент</div>
+      <div style="font-size:8px;color:#888;margin-top:2px;">Запись к мастеру, мои визиты</div>
+    </div>
+    <div style="border:1.5px solid #1a6b4a;border-radius:5px;padding:8px 10px;cursor:pointer;">
+      <div style="font-weight:bold;font-size:10px;color:#1a6b4a;">👷 Я — Сотрудник</div>
+      <div style="font-size:8px;color:#888;margin-top:2px;">Мои записи и расписание</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:8px;font-size:8px;color:#aaa;">Нет аккаунта? <span class="tag-link">Зарегистрироваться</span></div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  C. ФОРМА ВХОДА (единая)
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:1190px;top:50px;font-size:14px;">Форма входа</div>
+<div class="screen" style="left:1190px;top:80px;width:240px;">
+  <div class="pg-header"><span class="logo">✂ BookApp</span><div class="hdr-nav"><div class="hdr-btn active">Вход</div></div></div>
+  <div class="pg-body">
+    <div style="font-size:12px;font-weight:bold;text-align:center;margin-bottom:8px;">Вход в систему</div>
+    <div style="display:flex;gap:4px;margin-bottom:8px;">
+      <div style="flex:1;height:22px;border:1.5px solid #4a235a;border-radius:3px;font-size:8px;text-align:center;line-height:20px;background:#f5eeff;color:#4a235a;font-weight:bold;">Бизнесмен</div>
+      <div style="flex:1;height:22px;border:1px solid #ddd;border-radius:3px;font-size:8px;text-align:center;line-height:20px;color:#888;">Клиент</div>
+      <div style="flex:1;height:22px;border:1px solid #ddd;border-radius:3px;font-size:8px;text-align:center;line-height:20px;color:#888;">Сотрудник</div>
+    </div>
+    <div class="fl">Логин / Email</div><div class="fi"></div>
+    <div class="fl">Пароль</div><div class="fi"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:3px;"><span class="tag-link">Забыли пароль?</span></div>
+    <div class="btn btn-primary" style="margin-top:8px;">Войти</div>
+    <div style="text-align:center;margin-top:6px;font-size:8px;color:#aaa;">Нет аккаунта? <span class="tag-link">Зарегистрироваться</span></div>
+    <div style="text-align:center;"><div class="badge">БД проверка</div></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  D. РЕГИСТРАЦИЯ БИЗНЕСМЕНА (merged, краткая)
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:40px;top:450px;color:#4a235a;">Регистрация Бизнесмена</div>
+<div class="screen" style="left:40px;top:480px;width:500px;border-color:#4a235a;">
+  <div class="pg-header" style="background:#4a235a;"><span class="logo">✂ BookApp — Регистрация бизнеса</span><div class="hdr-nav"><div class="hdr-btn">Вход</div></div></div>
+  <div class="pg-body">
+    <div class="g2">
+      <!-- Левая колонка -->
+      <div>
+        <div class="shdr" style="background:#4a235a;">👤 О владельце</div>
+        <div class="fl">Фамилия Имя Отчество <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Телефон <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Email <span class="req">*</span></div><div class="fi"></div>
+
+        <div class="shdr" style="background:#4a235a;margin-top:8px;">🔐 Аккаунт</div>
+        <div class="fl">Логин <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Пароль <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Подтвердить пароль <span class="req">*</span></div><div class="fi"></div>
+      </div>
+      <!-- Правая колонка -->
+      <div>
+        <div class="shdr" style="background:#4a235a;">🏢 О бизнесе</div>
+        <div class="fl">Название компании <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Форма собственности</div>
+        <select class="fs"><option>ИП</option><option>ООО</option><option>АО</option><option>Самозанятый</option></select>
+        <div class="fl">ИНН <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Категория бизнеса <span class="req">*</span></div>
+        <select class="fs">
+          <option>Тату-студия</option>
+          <option>Парикмахерская</option>
+          <option>Салон красоты</option>
+          <option>Маникюр / Педикюр</option>
+          <option>Барбершоп</option>
+          <option>Косметология</option>
+          <option>Массаж / СПА</option>
+          <option>Фитнес / Тренировки</option>
+          <option>Медицина / Стоматология</option>
+          <option>Другое...</option>
+        </select>
+        <div class="fl">Город <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Телефон компании</div><div class="fi"></div>
+      </div>
+    </div>
+    <div class="chk" style="margin-top:8px;"><div class="b"></div><span>Согласен с условиями использования и политикой конфиденциальности</span></div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <div class="btn btn-primary" style="margin-top:0;flex:2;">✅ Зарегистрироваться</div>
+    </div>
+    <div style="text-align:center;margin-top:5px;font-size:8px;color:#aaa;">Уже есть аккаунт? <span class="tag-link">Войти →</span></div>
+    <div style="text-align:center;"><div class="badge" style="border-color:#4a235a;color:#4a235a;">Обновление БД (бизнесмены)</div></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  E. РЕГИСТРАЦИЯ КЛИЕНТА
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:600px;top:450px;color:#1a5fa8;">Регистрация Клиента</div>
+<div class="screen" style="left:600px;top:480px;width:380px;border-color:#1a5fa8;">
+  <div class="pg-header" style="background:#1a5fa8;"><span class="logo">✂ BookApp — Регистрация клиента</span><div class="hdr-nav"><div class="hdr-btn">Вход</div></div></div>
+  <div class="pg-body">
+    <div class="g2">
+      <div>
+        <div class="fl">Имя <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Фамилия <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Телефон <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Email</div><div class="fi"></div>
+      </div>
+      <div>
+        <div class="fl">Логин <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Пароль <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Дата рождения</div><div class="fi"></div>
+        <div class="fl">Город</div><div class="fi"></div>
+      </div>
+    </div>
+    <div style="margin-top:6px;">
+      <div class="fl">Пол</div>
+      <div style="display:flex;gap:10px;margin-top:3px;">
+        <label style="font-size:9px;display:flex;align-items:center;gap:3px;"><div style="width:10px;height:10px;border:1px solid #999;border-radius:50%;background:#1a5fa8;"></div>Мужской</label>
+        <label style="font-size:9px;display:flex;align-items:center;gap:3px;"><div style="width:10px;height:10px;border:1px solid #999;border-radius:50%;"></div>Женский</label>
+        <label style="font-size:9px;display:flex;align-items:center;gap:3px;"><div style="width:10px;height:10px;border:1px solid #999;border-radius:50%;"></div>Не указывать</label>
+      </div>
+    </div>
+    <div class="chk" style="margin-top:6px;"><div class="b"></div><span>Согласен с политикой конфиденциальности</span></div>
+    <div class="btn btn-primary" style="background:#1a5fa8;border-color:#1a5fa8;">✅ Создать аккаунт</div>
+    <div style="text-align:center;margin-top:5px;font-size:8px;color:#aaa;">Уже есть аккаунт? <span class="tag-link">Войти →</span></div>
+    <div style="text-align:center;"><div class="badge" style="border-color:#1a5fa8;color:#1a5fa8;">Обновление БД (клиенты)</div></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  F. КАБИНЕТ БИЗНЕСМЕНА (по скрину)
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:40px;top:955px;color:#4a235a;">Кабинет Бизнесмена</div>
+<div class="screen" style="left:40px;top:990px;width:810px;height:650px;border-color:#4a235a;padding:0;display:flex;flex-direction:column;">
+  <!-- Header -->
+  <div class="pg-header" style="background:#4a235a;border-radius:6px 6px 0 0;">
+    <span class="logo">✂ BookApp</span>
+    <div class="hdr-nav">
+      <div class="hdr-btn">Сотрудники</div>
+      <div class="hdr-btn">Клиенты</div>
+      <div class="hdr-btn">Аналитика</div>
+      <div class="hdr-btn">Финансы</div>
+      <div class="hdr-btn">⚙ Настройки</div>
+    </div>
+  </div>
+  <!-- Body -->
+  <div style="display:flex;flex:1;overflow:hidden;">
+    <!-- Sidebar -->
+    <div class="cab-sidebar">
+      <div class="cab-sidebar mini-cal" style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.1);">
+        <div class="cab-sidebar mini-cal-title" style="font-size:8px;color:#fff;text-align:center;margin-bottom:3px;">Ноябрь, 2025</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;font-size:6px;color:rgba(255,255,255,0.5);text-align:center;">
+          <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+          <span>28</span><span>29</span><span>30</span><span>31</span><span>1</span><span>2</span><span>3</span>
+          <span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+          <span>11</span><span>12</span><span>13</span><span>14</span><span>15</span>
+          <span style="background:#f0a000;color:#fff;border-radius:50%;width:10px;height:10px;display:inline-block;line-height:10px;">16</span>
+          <span>17</span>
+          <span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span>
+        </div>
+      </div>
+      <div style="margin-top:4px;">
+        <div class="cab-sidebar menu-item active" style="display:flex;align-items:center;gap:6px;padding:7px 10px;font-size:9px;color:#fff;border-left:3px solid #f0a000;background:rgba(255,255,255,0.1);">
+          <span>📅</span> Расписание
+        </div>
+        <div class="cab-sidebar menu-item" style="display:flex;align-items:center;gap:6px;padding:7px 10px;font-size:9px;color:rgba(255,255,255,0.7);">
+          <span>👷</span> Сотрудники
+        </div>
+        <div class="cab-sidebar menu-item" style="display:flex;align-items:center;gap:6px;padding:7px 10px;font-size:9px;color:rgba(255,255,255,0.7);">
+          <span>👥</span> Клиенты
+        </div>
+        <div class="cab-sidebar menu-item" style="display:flex;align-items:center;gap:6px;padding:7px 10px;font-size:9px;color:rgba(255,255,255,0.7);">
+          <span>📊</span> Аналитика
+        </div>
+        <div class="cab-sidebar menu-item" style="display:flex;align-items:center;gap:6px;padding:7px 10px;font-size:9px;color:rgba(255,255,255,0.7);">
+          <span>💰</span> Финансы
+        </div>
+      </div>
+    </div>
+    <!-- Main -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      <!-- Top bar -->
+      <div style="height:36px;border-bottom:1px solid #eee;display:flex;align-items:center;padding:0 10px;gap:6px;background:#fff;flex-shrink:0;">
+        <div style="height:24px;border:1px solid #ddd;border-radius:4px;padding:0 8px;font-size:8px;line-height:22px;background:#fff;">Сегодня</div>
+        <div style="width:20px;height:20px;border:1px solid #ddd;border-radius:3px;font-size:9px;text-align:center;line-height:18px;">&lt;</div>
+        <div style="width:20px;height:20px;border:1px solid #ddd;border-radius:3px;font-size:9px;text-align:center;line-height:18px;">&gt;</div>
+        <div style="font-size:12px;font-weight:bold;flex:1;text-align:center;">16 ноября, понедельник</div>
+        <div style="height:24px;border:1px solid #ddd;border-radius:4px;padding:0 8px;font-size:8px;line-height:22px;background:#4a235a;color:#fff;font-weight:bold;">+ Продать</div>
+        <div style="height:24px;border:1px solid #ddd;border-radius:4px;padding:0 8px;font-size:8px;line-height:22px;font-weight:bold;">180 670 ₽</div>
+        <div style="height:24px;border:1px solid #ddd;border-radius:4px;padding:0 8px;font-size:8px;line-height:22px;">День</div>
+        <div style="height:24px;border:1.5px solid #4a235a;border-radius:4px;padding:0 8px;font-size:8px;line-height:22px;color:#4a235a;font-weight:bold;">Неделя</div>
+      </div>
+      <!-- Calendar grid -->
+      <div style="flex:1;display:flex;overflow:hidden;">
+        <!-- Time column -->
+        <div style="width:36px;flex-shrink:0;border-right:1px solid #eee;padding-top:50px;">
+          <div style="height:40px;border-bottom:1px solid #f5f5f5;font-size:7px;color:#aaa;text-align:right;padding-right:3px;padding-top:2px;">09:00</div>
+          <div style="height:40px;border-bottom:1px solid #f5f5f5;font-size:7px;color:#aaa;text-align:right;padding-right:3px;padding-top:2px;">10:00</div>
+          <div style="height:40px;border-bottom:1px solid #f5f5f5;font-size:7px;color:#aaa;text-align:right;padding-right:3px;padding-top:2px;">11:00</div>
+          <div style="height:40px;border-bottom:1px solid #f5f5f5;font-size:7px;color:#aaa;text-align:right;padding-right:3px;padding-top:2px;">12:00</div>
+          <div style="height:40px;border-bottom:1px solid #f5f5f5;font-size:7px;color:#aaa;text-align:right;padding-right:3px;padding-top:2px;">13:00</div>
+          <div style="height:40px;border-bottom:1px solid #f5f5f5;font-size:7px;color:#aaa;text-align:right;padding-right:3px;padding-top:2px;">14:00</div>
+          <div style="height:40px;border-bottom:1px solid #f5f5f5;font-size:7px;color:#aaa;text-align:right;padding-right:3px;padding-top:2px;">15:00</div>
+        </div>
+        <!-- Staff columns -->
+        <div style="flex:1;display:flex;overflow:hidden;">
+          <!-- Staff 1: Мария -->
+          <div style="flex:1;border-right:1px solid #eee;min-width:0;">
+            <div style="height:50px;border-bottom:1px solid #eee;padding:4px;text-align:center;">
+              <div style="width:26px;height:26px;border-radius:50%;background:#e8c4c4;margin:0 auto 2px;font-size:12px;line-height:26px;text-align:center;">👩</div>
+              <div style="font-size:8px;font-weight:bold;">Мария</div>
+              <div style="font-size:7px;color:#aaa;">Визажист</div>
+            </div>
+            <div style="position:relative;height:40px;"><div class="appt appt-teal" style="top:2px;height:76px;">09:00–11:00<br>Мастер-класс</div></div>
+            <div style="height:40px;"></div>
+            <div style="position:relative;height:40px;"><div class="appt appt-pink" style="top:2px;height:52px;">11:20–13:40<br>Ксения · Макияж</div></div>
+            <div style="height:40px;"></div>
+            <div style="height:40px;"></div>
+            <div style="position:relative;height:40px;"><div class="appt appt-green" style="top:2px;height:36px;">14:00–16:00<br>Александра</div></div>
+            <div style="height:40px;"></div>
+          </div>
+          <!-- Staff 2: Анна -->
+          <div style="flex:1;border-right:1px solid #eee;min-width:0;">
+            <div style="height:50px;border-bottom:1px solid #eee;padding:4px;text-align:center;">
+              <div style="width:26px;height:26px;border-radius:50%;background:#c4d4e8;margin:0 auto 2px;font-size:12px;line-height:26px;">👩</div>
+              <div style="font-size:8px;font-weight:bold;">Анна</div>
+              <div style="font-size:7px;color:#aaa;">Мастер маникюра</div>
+            </div>
+            <div style="position:relative;height:40px;"><div class="appt appt-purple" style="top:2px;height:56px;">09:00–10:40<br>Марина В.</div></div>
+            <div style="height:40px;"></div>
+            <div style="height:40px;"></div>
+            <div style="position:relative;height:40px;"><div class="appt appt-orange" style="top:2px;height:36px;">13:20–15:20<br>Анна К.</div></div>
+            <div style="height:40px;"></div>
+            <div style="height:40px;"></div>
+            <div style="height:40px;"></div>
+          </div>
+          <!-- Staff 3: Наталья -->
+          <div style="flex:1;border-right:1px solid #eee;min-width:0;">
+            <div style="height:50px;border-bottom:1px solid #eee;padding:4px;text-align:center;">
+              <div style="width:26px;height:26px;border-radius:50%;background:#c4e8d4;margin:0 auto 2px;font-size:12px;line-height:26px;">👩</div>
+              <div style="font-size:8px;font-weight:bold;">Наталья</div>
+              <div style="font-size:7px;color:#aaa;">Мастер эпиляции</div>
+            </div>
+            <div style="position:relative;height:40px;"><div class="appt appt-teal" style="top:2px;height:44px;">09:00–11:20<br>Дмитрий</div></div>
+            <div style="height:40px;"></div>
+            <div style="position:relative;height:40px;"><div class="appt appt-green" style="top:4px;height:36px;">11:40–13:10<br>Кристина С.</div></div>
+            <div style="height:40px;"></div>
+            <div style="height:40px;"></div>
+            <div style="position:relative;height:40px;"><div class="appt appt-orange" style="top:2px;height:36px;">14:30–17:00<br>Арина</div></div>
+            <div style="height:40px;"></div>
+          </div>
+          <!-- Staff 4: Ольга -->
+          <div style="flex:1;border-right:1px solid #eee;min-width:0;">
+            <div style="height:50px;border-bottom:1px solid #eee;padding:4px;text-align:center;">
+              <div style="width:26px;height:26px;border-radius:50%;background:#e8e4c4;margin:0 auto 2px;font-size:12px;line-height:26px;">👩</div>
+              <div style="font-size:8px;font-weight:bold;">Ольга</div>
+              <div style="font-size:7px;color:#aaa;">Массажист</div>
+            </div>
+            <div style="position:relative;height:40px;"><div class="appt appt-pink" style="top:2px;height:44px;">09:00–10:10<br>Елена В.</div></div>
+            <div style="position:relative;height:40px;"><div class="appt appt-purple" style="top:4px;height:44px;">10:30–12:50<br>Всеволод</div></div>
+            <div style="height:40px;"></div>
+            <div style="height:40px;"></div>
+            <div style="position:relative;height:40px;"><div class="appt appt-teal" style="top:2px;height:36px;">13:10–14:30<br>Марина С.</div></div>
+            <div style="height:40px;"></div>
+            <div style="height:40px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  G. СПИСОК СОТРУДНИКОВ
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:870px;top:955px;">Список сотрудников</div>
+<div class="screen" style="left:870px;top:990px;width:380px;border-color:#444;">
+  <div class="pg-header"><span class="logo">✂ BookApp — Сотрудники</span><div class="hdr-nav"><div class="hdr-btn">+ Добавить</div></div></div>
+  <div class="pg-body">
+    <div style="display:flex;gap:4px;margin-bottom:8px;">
+      <div style="flex:1;height:20px;border:1px solid #ddd;border-radius:3px;font-size:8px;padding:0 5px;line-height:18px;color:#bbb;background:#fafafa;">Поиск сотрудника...</div>
+      <select style="height:20px;border:1px solid #ddd;border-radius:3px;font-size:8px;background:#fafafa;padding:0 3px;">
+        <option>Все должности</option><option>Мастер</option><option>Администратор</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;">
+      <!-- Карточка 1 -->
+      <div class="emp-card">
+        <div class="emp-photo">👩</div>
+        <div class="emp-name">Мария К.</div>
+        <div class="emp-role">Визажист</div>
+        <div class="emp-desc">Опыт 5 лет. Свадебный и вечерний макияж, перманент.</div>
+        <div class="emp-btn-detail">Подробнее →</div>
+      </div>
+      <!-- Карточка 2 -->
+      <div class="emp-card">
+        <div class="emp-photo">👩</div>
+        <div class="emp-name">Анна П.</div>
+        <div class="emp-role">Мастер маникюра</div>
+        <div class="emp-desc">Маникюр, педикюр, гель-лак, наращивание ногтей.</div>
+        <div class="emp-btn-detail">Подробнее →</div>
+      </div>
+      <!-- Карточка 3 -->
+      <div class="emp-card">
+        <div class="emp-photo">👩</div>
+        <div class="emp-name">Наталья С.</div>
+        <div class="emp-role">Мастер эпиляции</div>
+        <div class="emp-desc">Воск, шугаринг, лазерная эпиляция. Стаж 7 лет.</div>
+        <div class="emp-btn-detail">Подробнее →</div>
+      </div>
+      <!-- Карточка 4 -->
+      <div class="emp-card">
+        <div class="emp-photo">👩</div>
+        <div class="emp-name">Ольга Д.</div>
+        <div class="emp-role">Массажист</div>
+        <div class="emp-desc">Классика, лимфодренаж, антицеллюлитный массаж.</div>
+        <div class="emp-btn-detail">Подробнее →</div>
+      </div>
+      <!-- Карточка 5 -->
+      <div class="emp-card">
+        <div class="emp-photo">👨</div>
+        <div class="emp-name">Олег Н.</div>
+        <div class="emp-role">Бровист</div>
+        <div class="emp-desc">Коррекция, архитектура и окрашивание бровей.</div>
+        <div class="emp-btn-detail">Подробнее →</div>
+      </div>
+      <!-- Карточка 6 -->
+      <div class="emp-card">
+        <div class="emp-photo">👨</div>
+        <div class="emp-name">Кирилл М.</div>
+        <div class="emp-role">Мастер маникюра</div>
+        <div class="emp-desc">Мужской маникюр, педикюр, креативный дизайн ногтей.</div>
+        <div class="emp-btn-detail">Подробнее →</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  H. КАРТОЧКА СОТРУДНИКА (expanded popup)
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:1270px;top:955px;font-size:14px;">Карточка сотрудника</div>
+<div class="modal-pop" style="left:1270px;top:990px;width:280px;border-color:#3a7bd5;">
+  <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
+    <div style="width:52px;height:52px;border-radius:8px;background:#e8c4c4;flex-shrink:0;font-size:28px;text-align:center;line-height:52px;">👩</div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:bold;">Мария Коваленко</div>
+      <div style="font-size:9px;color:#888;margin-top:1px;">Визажист · Опыт 5 лет</div>
+      <div style="display:flex;gap:4px;margin-top:4px;">
+        <div style="font-size:8px;background:#f5f5f5;border:1px solid #eee;border-radius:10px;padding:1px 6px;">⭐ 4.9</div>
+        <div style="font-size:8px;background:#f0fff0;border:1px solid #c8e6c9;border-radius:10px;padding:1px 6px;color:#2a7a2a;">● Работает</div>
+      </div>
+    </div>
+  </div>
+  <div class="div"></div>
+  <div class="g2" style="font-size:8px;gap:6px;">
+    <div>
+      <div style="color:#aaa;margin-bottom:1px;">📞 Телефон</div>
+      <div style="font-weight:bold;">+7 999 ••• •• 12</div>
+    </div>
+    <div>
+      <div style="color:#aaa;margin-bottom:1px;">📧 Email</div>
+      <div style="font-weight:bold;">m.koval@mail.ru</div>
+    </div>
+    <div>
+      <div style="color:#aaa;margin-bottom:1px;">📅 Режим работы</div>
+      <div style="font-weight:bold;">Пн–Сб 10:00–20:00</div>
+    </div>
+    <div>
+      <div style="color:#aaa;margin-bottom:1px;">💰 Тип оплаты</div>
+      <div style="font-weight:bold;">Ставка + %</div>
+    </div>
+  </div>
+  <div class="div"></div>
+  <div style="font-size:9px;font-weight:bold;margin-bottom:4px;">Услуги</div>
+  <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px;">
+    <div style="font-size:7px;background:#f5eeff;border:1px solid #d0a0f0;border-radius:10px;padding:1px 6px;color:#4a235a;">Свадебный макияж</div>
+    <div style="font-size:7px;background:#f5eeff;border:1px solid #d0a0f0;border-radius:10px;padding:1px 6px;color:#4a235a;">Вечерний макияж</div>
+    <div style="font-size:7px;background:#f5eeff;border:1px solid #d0a0f0;border-radius:10px;padding:1px 6px;color:#4a235a;">Перманентный макияж</div>
+  </div>
+  <div style="font-size:9px;font-weight:bold;margin-bottom:3px;">О себе</div>
+  <div style="font-size:8px;color:#666;line-height:1.4;margin-bottom:8px;">Специализируюсь на свадебном и вечернем макияже. Работаю с профессиональной косметикой MAC, NYX.</div>
+  <div class="div"></div>
+  <div style="font-size:9px;font-weight:bold;margin-bottom:4px;">Статистика</div>
+  <div style="display:flex;gap:6px;margin-bottom:8px;">
+    <div style="flex:1;background:#f5f5f5;border-radius:4px;padding:5px;text-align:center;">
+      <div style="font-size:14px;font-weight:bold;">142</div>
+      <div style="font-size:7px;color:#888;">Записей</div>
+    </div>
+    <div style="flex:1;background:#f5f5f5;border-radius:4px;padding:5px;text-align:center;">
+      <div style="font-size:14px;font-weight:bold;">98%</div>
+      <div style="font-size:7px;color:#888;">Посещаемость</div>
+    </div>
+    <div style="flex:1;background:#f5f5f5;border-radius:4px;padding:5px;text-align:center;">
+      <div style="font-size:14px;font-weight:bold;">18к</div>
+      <div style="font-size:7px;color:#888;">Доход/мес</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px;">
+    <div style="flex:1;height:24px;border:1px solid #ddd;border-radius:4px;font-size:9px;text-align:center;line-height:22px;color:#666;">Редактировать</div>
+    <div style="flex:1;height:24px;border:1px solid #c0392b;border-radius:4px;font-size:9px;text-align:center;line-height:22px;color:#c0392b;">Отключить</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  I. СОЗДАНИЕ АККАУНТА СОТРУДНИКА (бизнесменом)
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:40px;top:1720px;color:#1a6b4a;">Создание аккаунта сотрудника</div>
+<div style="position:absolute;left:40px;top:1755px;font-size:9px;color:#888;font-style:italic;">⚠ Аккаунт создаёт только бизнесмен</div>
+<div class="screen" style="left:40px;top:1780px;width:440px;border-color:#1a6b4a;">
+  <div class="pg-header" style="background:#1a6b4a;"><span class="logo">✂ BookApp — Новый сотрудник</span></div>
+  <div class="pg-body">
+    <div class="g2">
+      <div>
+        <div class="shdr" style="background:#1a6b4a;">👤 Личные данные</div>
+        <div class="fl">Фамилия <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Имя <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Отчество</div><div class="fi"></div>
+        <div class="fl">Телефон <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Email</div><div class="fi"></div>
+        <div class="fl">Фото</div><div class="fup">+ Загрузить фото</div>
+      </div>
+      <div>
+        <div class="shdr" style="background:#1a6b4a;">💼 Рабочие данные</div>
+        <div class="fl">Должность <span class="req">*</span></div>
+        <select class="fs"><option>Мастер</option><option>Администратор</option><option>Менеджер</option></select>
+        <div class="fl">Специализация <span class="req">*</span></div>
+        <select class="fs">
+          <option>Парикмахер</option><option>Мастер маникюра</option>
+          <option>Косметолог</option><option>Массажист</option>
+          <option>Визажист</option><option>Другое...</option>
+        </select>
+        <div class="fl">Режим работы</div>
+        <select class="fs"><option>Полный день</option><option>Гибкий</option><option>Сменный 2/2</option></select>
+        <div class="fl">Тип занятости</div>
+        <select class="fs"><option>Штатный</option><option>Совместитель</option><option>ГПХ</option></select>
+        <div class="fl">Перечень услуг</div>
+        <div class="fta"></div>
+        <div class="shdr" style="background:#1a6b4a;margin-top:8px;">🔐 Аккаунт</div>
+        <div class="fl">Логин <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Пароль <span class="req">*</span></div><div class="fi"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <div style="flex:1;height:26px;border:1px solid #ddd;border-radius:4px;font-size:10px;text-align:center;line-height:24px;color:#888;">Отмена</div>
+      <div class="btn btn-primary" style="flex:2;margin-top:0;background:#1a6b4a;border-color:#1a6b4a;">✅ Создать аккаунт сотрудника</div>
+    </div>
+    <div style="text-align:center;"><div class="badge" style="border-color:#1a6b4a;color:#1a6b4a;">Обновление БД (сотрудники)</div></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  J. КАБИНЕТ СОТРУДНИКА (Мои записи)
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:510px;top:1720px;color:#1a6b4a;">Кабинет сотрудника</div>
+<div class="screen" style="left:510px;top:1780px;width:320px;border-color:#1a6b4a;">
+  <div class="pg-header" style="background:#1a6b4a;"><span class="logo">✂ BookApp — Мои записи</span><div class="hdr-nav"><div class="hdr-btn">Профиль</div><div class="hdr-btn">Выйти</div></div></div>
+  <div class="pg-body">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <div style="width:40px;height:40px;border-radius:6px;background:#c8e6c9;font-size:22px;text-align:center;line-height:40px;flex-shrink:0;">👩</div>
+      <div>
+        <div style="font-weight:bold;font-size:11px;">Мария Коваленко</div>
+        <div style="font-size:8px;color:#888;">Визажист · Пн–Сб 10:00–20:00</div>
+        <div style="font-size:8px;color:#f0a000;">⭐ 4.9 · 142 записи</div>
+      </div>
+    </div>
+    <div class="div"></div>
+    <!-- Stats -->
+    <div style="display:flex;gap:5px;margin-bottom:8px;">
+      <div style="flex:1;border:1px solid #c8e6c9;border-radius:4px;padding:5px;text-align:center;background:#f0fff0;">
+        <div style="font-size:14px;font-weight:bold;color:#1a6b4a;">5</div>
+        <div style="font-size:7px;color:#666;">Сегодня</div>
+      </div>
+      <div style="flex:1;border:1px solid #c8e6c9;border-radius:4px;padding:5px;text-align:center;background:#f0fff0;">
+        <div style="font-size:14px;font-weight:bold;color:#1a6b4a;">23</div>
+        <div style="font-size:7px;color:#666;">Неделя</div>
+      </div>
+      <div style="flex:1;border:1px solid #c8e6c9;border-radius:4px;padding:5px;text-align:center;background:#f0fff0;">
+        <div style="font-size:14px;font-weight:bold;color:#1a6b4a;">18к</div>
+        <div style="font-size:7px;color:#666;">Доход/мес</div>
+      </div>
+    </div>
+    <!-- Date selector -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div style="width:20px;height:20px;border:1px solid #ddd;border-radius:3px;text-align:center;line-height:18px;font-size:9px;">&lt;</div>
+      <div style="font-size:10px;font-weight:bold;">16 ноября, понедельник</div>
+      <div style="width:20px;height:20px;border:1px solid #ddd;border-radius:3px;text-align:center;line-height:18px;font-size:9px;">&gt;</div>
+    </div>
+    <!-- Records -->
+    <div class="rec-row">
+      <div class="rec-info"><div style="font-weight:bold;">Ксения М.</div><div style="color:#888;">09:00 · Свадебный макияж · 2ч</div></div>
+      <div style="display:flex;gap:3px;"><div class="btn-red">Отмена</div><div class="btn-orange">Перенос</div></div>
+    </div>
+    <div class="rec-row">
+      <div class="rec-info"><div style="font-weight:bold;">Александра Л.</div><div style="color:#888;">11:00 · Вечерний макияж · 1.5ч</div></div>
+      <div style="display:flex;gap:3px;"><div class="btn-red">Отмена</div><div class="btn-orange">Перенос</div></div>
+    </div>
+    <div class="rec-row">
+      <div class="rec-info"><div style="font-weight:bold;">Елена В.</div><div style="color:#888;">13:30 · Перманент · 3ч</div></div>
+      <div style="display:flex;gap:3px;"><div class="btn-red">Отмена</div><div class="btn-orange">Перенос</div></div>
+    </div>
+    <div class="rec-row">
+      <div class="rec-info"><div style="font-weight:bold;">Ирина С.</div><div style="color:#888;">17:00 · Макияж · 1ч</div></div>
+      <div style="display:flex;gap:3px;"><div class="btn-red">Отмена</div><div class="btn-orange">Перенос</div></div>
+    </div>
+    <div style="text-align:center;margin-top:8px;"><div class="badge" style="border-color:#1a6b4a;color:#1a6b4a;">БД (записи)</div></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  K. РЕГИСТРАЦИЯ САМОЗАНЯТОГО
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:40px;top:2200px;color:#0e7070;">Самозанятый мастер — Регистрация</div>
+<div class="screen" style="left:40px;top:2235px;width:460px;border-color:#0e7070;">
+  <div class="pg-header" style="background:#0e7070;"><span class="logo">✂ BookApp — Регистрация самозанятого</span><div class="hdr-nav"><div class="hdr-btn">Вход</div></div></div>
+  <div class="pg-body">
+    <div class="g2">
+      <div>
+        <div class="fl">Имя Фамилия <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">ИНН самозанятого <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Телефон <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Email</div><div class="fi"></div>
+        <div class="fl">Логин <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Пароль <span class="req">*</span></div><div class="fi"></div>
+      </div>
+      <div>
+        <div class="fl">Специализация <span class="req">*</span></div>
+        <select class="fs">
+          <option>Тату-мастер</option><option>Парикмахер</option>
+          <option>Мастер маникюра</option><option>Массажист</option><option>Другое...</option>
+        </select>
+        <div class="fl">Город <span class="req">*</span></div><div class="fi"></div>
+        <div class="fl">Стаж (лет)</div><div class="fi"></div>
+        <div class="fl">Фото профиля</div><div class="fup">+ Загрузить фото</div>
+        <div class="fl">О себе / Услуги</div><div class="fta"></div>
+      </div>
+    </div>
+    <div class="chk" style="margin-top:6px;"><div class="b"></div><span>Согласен с условиями использования и обработкой персональных данных</span></div>
+    <div class="btn btn-primary" style="background:#0e7070;border-color:#0e7070;">✅ Зарегистрироваться как самозанятый</div>
+    <div style="text-align:center;margin-top:5px;font-size:8px;color:#aaa;">Уже есть аккаунт? <span class="tag-link">Войти →</span></div>
+    <div style="text-align:center;"><div class="badge" style="border-color:#0e7070;color:#0e7070;">Обновление БД (самозанятые)</div></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  L. КАБИНЕТ САМОЗАНЯТОГО
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:40px;top:2570px;color:#0e7070;">Кабинет самозанятого</div>
+<div class="screen" style="left:40px;top:2605px;width:460px;border-color:#0e7070;">
+  <div class="pg-header" style="background:#0e7070;"><span class="logo">✂ BookApp</span><div class="hdr-nav"><div class="hdr-btn">Расписание</div><div class="hdr-btn">Клиенты</div><div class="hdr-btn">Финансы</div><div class="hdr-btn">Настройки</div></div></div>
+  <div class="pg-body">
+    <div style="display:flex;gap:10px;margin-bottom:8px;">
+      <div style="width:52px;height:52px;border-radius:8px;background:#b2dfdb;font-size:26px;text-align:center;line-height:52px;flex-shrink:0;">🧑</div>
+      <div>
+        <div style="font-size:12px;font-weight:bold;">(Имя Фамилия)</div>
+        <div style="font-size:9px;color:#888;">(Специализация) · (Город)</div>
+        <div style="font-size:9px;color:#f0a000;">⭐ 4.8 · 96 отзывов</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;">
+      <div style="flex:1;border:1px solid #b2dfdb;border-radius:4px;padding:5px;text-align:center;background:#e0f2f1;">
+        <div style="font-size:14px;font-weight:bold;color:#0e7070;">8</div><div style="font-size:7px;color:#666;">Записей сегодня</div>
+      </div>
+      <div style="flex:1;border:1px solid #b2dfdb;border-radius:4px;padding:5px;text-align:center;background:#e0f2f1;">
+        <div style="font-size:14px;font-weight:bold;color:#0e7070;">64</div><div style="font-size:7px;color:#666;">Клиентов</div>
+      </div>
+      <div style="flex:1;border:1px solid #b2dfdb;border-radius:4px;padding:5px;text-align:center;background:#e0f2f1;">
+        <div style="font-size:14px;font-weight:bold;color:#0e7070;">32к</div><div style="font-size:7px;color:#666;">Доход/мес</div>
+      </div>
+    </div>
+    <div class="div"></div>
+    <div style="font-size:10px;font-weight:bold;margin-bottom:5px;">Ближайшие записи</div>
+    <div class="rec-row"><div class="rec-info"><div style="font-weight:bold;">(Клиент)</div><div style="color:#888;">10:00 · (Услуга) · 1.5ч</div></div><div style="display:flex;gap:3px;"><div class="btn-red">Отмена</div><div class="btn-orange">Перенос</div></div></div>
+    <div class="rec-row"><div class="rec-info"><div style="font-weight:bold;">(Клиент)</div><div style="color:#888;">12:00 · (Услуга) · 2ч</div></div><div style="display:flex;gap:3px;"><div class="btn-red">Отмена</div><div class="btn-orange">Перенос</div></div></div>
+    <div class="rec-row"><div class="rec-info"><div style="font-weight:bold;">(Клиент)</div><div style="color:#888;">15:30 · (Услуга) · 1ч</div></div><div style="display:flex;gap:3px;"><div class="btn-red">Отмена</div><div class="btn-orange">Перенос</div></div></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+  M. КАБИНЕТ КЛИЕНТА
+══════════════════════════════════════ -->
+<div class="zlabel" style="left:560px;top:2200px;color:#1a5fa8;">Кабинет Клиента</div>
+<div class="screen" style="left:560px;top:2235px;width:400px;border-color:#1a5fa8;">
+  <div class="pg-header" style="background:#1a5fa8;"><span class="logo">✂ BookApp</span><div class="hdr-nav"><div class="hdr-btn">Записи</div><div class="hdr-btn">Мастера</div><div class="hdr-btn">Профиль</div></div></div>
+  <div class="pg-body">
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <div style="width:44px;height:44px;border-radius:50%;background:#bbdefb;font-size:22px;text-align:center;line-height:44px;flex-shrink:0;">👤</div>
+      <div>
+        <div style="font-size:12px;font-weight:bold;">(Имя Фамилия)</div>
+        <div style="font-size:8px;color:#888;">(Город) · Клиент с (дата)</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:8px;">
+      <div style="flex:1;border:1px solid #bbdefb;border-radius:4px;padding:5px;text-align:center;background:#e3f2fd;">
+        <div style="font-size:14px;font-weight:bold;color:#1a5fa8;">3</div><div style="font-size:7px;color:#666;">Предстоящих</div>
+      </div>
+      <div style="flex:1;border:1px solid #bbdefb;border-radius:4px;padding:5px;text-align:center;background:#e3f2fd;">
+        <div style="font-size:14px;font-weight:bold;color:#1a5fa8;">18</div><div style="font-size:7px;color:#666;">Всего записей</div>
+      </div>
+      <div style="flex:1;border:1px solid #bbdefb;border-radius:4px;padding:5px;text-align:center;background:#e3f2fd;">
+        <div style="font-size:14px;font-weight:bold;color:#1a5fa8;">4</div><div style="font-size:7px;color:#666;">Избранных</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
+      <div style="flex:0 0 calc(50% - 3px);height:22px;border:1px solid #ddd;border-radius:3px;font-size:8px;text-align:center;line-height:20px;">📅 Мои записи</div>
+      <div style="flex:0 0 calc(50% - 3px);height:22px;border:1px solid #ddd;border-radius:3px;font-size:8px;text-align:center;line-height:20px;">❤️ Избранные мастера</div>
+      <div style="flex:0 0 calc(50% - 3px);height:22px;border:1px solid #ddd;border-radius:3px;font-size:8px;text-align:center;line-height:20px;">🔔 Уведомления</div>
+      <div style="flex:0 0 calc(50% - 3px);height:22px;border:1px solid #ddd;border-radius:3px;font-size:8px;text-align:center;line-height:20px;">⚙️ Настройки</div>
+    </div>
+    <div class="div"></div>
+    <div style="font-size:10px;font-weight:bold;margin-bottom:5px;">Ближайшие записи</div>
+    <div class="rec-row"><div class="rec-info"><div style="font-weight:bold;">(Мастер) · (Услуга)</div><div style="color:#888;">14 апр, 11:00 · (Адрес)</div></div><div style="display:flex;gap:3px;"><div class="btn-red">Отмена</div><div class="btn-orange">Перенос</div></div></div>
+    <div class="rec-row"><div class="rec-info"><div style="font-weight:bold;">(Мастер) · (Услуга)</div><div style="color:#888;">16 апр, 15:30 · (Адрес)</div></div><div style="display:flex;gap:3px;"><div class="btn-red">Отмена</div><div class="btn-orange">Перенос</div></div></div>
+    <div class="div"></div>
+    <div style="font-size:10px;font-weight:bold;margin-bottom:4px;">Найти мастера</div>
+    <div style="display:flex;gap:4px;">
+      <div style="flex:1;height:22px;border:1px solid #ddd;border-radius:3px;font-size:8px;padding:0 6px;line-height:20px;color:#bbb;background:#fafafa;">Категория / имя / город...</div>
+      <div style="width:46px;height:22px;border:1.5px solid #1a5fa8;border-radius:3px;font-size:8px;text-align:center;line-height:20px;color:#1a5fa8;font-weight:bold;">Найти</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /canvas -->
+</body>
+</html>
